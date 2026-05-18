@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between mb-4">
+
+    <h2>Dashboard</h2>
+
+    <a href="{% url 'create_auth' %}"
+       class="btn btn-success">
+        New Authorization
+    </a>
+
+</div>
+
+<table class="table table-bordered table-striped">
+
+    <thead>
+        <tr>
+            <th>Vehicle</th>
+            <th>Registration</th>
+            <th>Employee</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        {% for authorization in authorizations %}
+
+        <tr>
+            <td>{{ authorization.vehicle_description }}</td>
+            <td>{{ authorization.registration_number }}</td>
+            <td>{{ authorization.surname_initials }}</td>
+            <td>{{ authorization.status }}</td>
+            <td>{{ authorization.created_at }}</td>
+
+            <td>
+                <a
+                    href="{% url 'auth_detail' authorization.id %}"
+                    class="btn btn-sm btn-primary"
+                >
+                    View
+                </a>
+            </td>
+        </tr>
+
+        {% endfor %}
+
+    </tbody>
+
+</table>
+
+{% endblock %}

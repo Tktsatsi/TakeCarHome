@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Authorization Detail</h2>
+
+<div class="card">
+
+    <div class="card-body">
+
+        <p>
+            <strong>Vehicle:</strong>
+            {{ authorization.vehicle_description }}
+        </p>
+
+        <p>
+            <strong>Registration:</strong>
+            {{ authorization.registration_number }}
+        </p>
+
+        <p>
+            <strong>Employee:</strong>
+            {{ authorization.surname_initials }}
+        </p>
+
+        <p>
+            <strong>Status:</strong>
+            {{ authorization.status }}
+        </p>
+
+        <p>
+            <strong>Motivation:</strong>
+            {{ authorization.motivation }}
+        </p>
+
+    </div>
+
+</div>
+
+{% endblock %}
