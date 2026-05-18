@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header text-center">
+                <h3 class="mb-0">Approval Review</h3>
+            </div>
+            <div class="card-body">
+                <p>
+                    <strong>Authorization:</strong> {{ authorization.vehicle_decription }}<br>
+                    <strong>Requested by:</strong> {{ authorization.submitted_by.username }}<br>
+                    <strong>Current step:</strong> {{ authorization.next_approval_role }}
+                </p>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        {{ form.decision.label_tag }}
+                        {{ form.decision }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.comments.label_tag }}
+                        {{ form.comments }}
+                        {% if form.comments.errors %}
+                            <div class="invalid-feedback d-block text-danger small">
+                                {{ form.comments.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="btn btn-success">Submit Review</button>
+                    <a href="{% url 'auth_detail' authorization.id %}" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

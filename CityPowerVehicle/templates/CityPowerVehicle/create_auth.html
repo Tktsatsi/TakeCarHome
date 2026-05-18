@@ -5,7 +5,7 @@
     <div class="col-md-8">
         <div class="card">
             <div class="card-header text-center">
-                <h3 class="mb-0">Create Vehicle Authorization</h3>
+                <h3 class="mb-0">{% if is_edit %}Edit Vehicle Authorization{% else %}Create Vehicle Authorization{% endif %}</h3>
             </div>
             <div class="card-body">
                 {% if form.non_field_errors %}
@@ -18,11 +18,23 @@
 
                 <form method="POST">
                     {% csrf_token %}
-                    
+
                     <div class="row">
                         {% for field in form %}
                         {% if field.field.widget.input_type == "checkbox" %}
                         <div class="col-md-12 mb-3">
+                            {% if field.name == 'declaration' %}
+                                <p class="text-muted small mb-2">
+                                    •	The vehicle must be securely locked and parked behind locked gates and the employee is held responsible and accountable for the safety of the vehicle at all times.
+                                    •	All tools/equipment stored in the vehicle must be securely locked in the vehicle, or in a separate lockable toolbox.
+                                    •	The vehicle is to be used solely for the execution of City Power business within the period of this authorization. It is not permissible to use the vehicle for any private matters.
+                                    •	If you fall sick and are unable to continue with the duties while the vehicle is in your position, you are 
+                                        to notify your team leader who will arrange for the vehicle to be collected within 24 hours.
+
+                                    I declare that all information supplied above are true and correct.
+
+                                </p>
+                            {% endif %}
                             <div class="form-check">
                                 {{ field }}
                                 <label class="form-check-label" for="{{ field.id_for_label }}">
@@ -54,10 +66,11 @@
                         {% endif %}
                         {% endfor %}
                     </div>
-
+                
                     <button type="submit" class="btn btn-primary">
                         Submit Authorization
                     </button>
+                    <a href="{% url 'dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
                 </form>
             </div>
         </div>

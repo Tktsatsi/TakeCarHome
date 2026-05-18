@@ -79,10 +79,46 @@
                     </div>
                 </div>
 
-                <div class="mt-4">
-                    <a href="{% url 'dashboard' %}" class="btn btn-secondary">
-                        Back to Dashboard
-                    </a>
+                {% if authorization.status == 'PENDING' and next_role_label %}
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <p>
+                            <strong>Next Approval Step:</strong><br>
+                            {{ next_role_label }}
+                        </p>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if approval_history.exists %}
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <h6>Approval History</h6>
+                        <ul class="list-group">
+                            {% for approval in approval_history %}
+                            <li class="list-group-item">
+                                <strong>{{ approval.role }}:</strong> {{ approval.approved|yesno:"Approved,Rejected" }} by {{ approval.approved_by.username }} on {{ approval.signed_on|date:"Y-m-d H:i" }}
+                                {% if approval.comments %}
+                                    <div class="text-muted small">{{ approval.comments }}</div>
+                                {% endif %}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="d-flex gap-2 flex-wrap">
+                    {% if can_edit %}
+                        <a href="{% url 'edit_auth' authorization.id %}" class="btn btn-primary">Edit</a>
+                    {% endif %}
+                    {% if can_delete %}
+                        <a href="{% url 'delete_auth' authorization.id %}" class="btn btn-danger">Delete</a>
+                    {% endif %}
+                    {% if can_approve %}
+                        <a href="{% url 'approve_auth' authorization.id %}" class="btn btn-success">Approve / Review</a>
+                    {% endif %}
+                    <a href="{% url 'dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
                 </div>
             </div>
         </div>

@@ -2,6 +2,12 @@
 <html>
 <head>
     <title>City Power Fleet Authorization</title>
+    
+    {% if user.is_authenticated %}
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    {% endif %}
 
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
@@ -133,10 +139,10 @@
         <span class="navbar-brand">
             Fleet Authorization
         </span>
-        {% if user.is_authenticated %}
+         {% if user.is_authenticated %}
         <div>
             <span class="me-3">Welcome, {{ user.username }}</span>
-            <a href="{% url 'login' %}" class="btn btn-sm btn-outline-danger">Logout</a>
+            <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-danger">Logout</a>
         </div>
         {% endif %}
     </div>

@@ -34,10 +34,12 @@
                             </span>
                         </td>
                         <td>{{ authorization.created_at|date:"Y-m-d H:i" }}</td>
-                        <td>
-                            <a href="{% url 'auth_detail' authorization.id %}" class="btn btn-sm btn-primary">
-                                View
-                            </a>
+                        <td class="d-flex gap-2 flex-wrap">
+                            <a href="{% url 'auth_detail' authorization.id %}" class="btn btn-sm btn-primary">View</a>
+                            {% if authorization.submitted_by == user and authorization.status == 'PENDING' %}
+                                <a href="{% url 'edit_auth' authorization.id %}" class="btn btn-sm btn-secondary">Edit</a>
+                                <a href="{% url 'delete_auth' authorization.id %}" class="btn btn-sm btn-danger">Delete</a>
+                            {% endif %}
                         </td>
                     </tr>
                     {% endfor %}
