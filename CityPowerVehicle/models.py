@@ -11,7 +11,7 @@ class VehicleAuth(models.Model):
         ('LENASIA', 'lenasia')
     ]
 
-    VEHICLE_SECURITY =[
+    VEHICLE_SECURITY = [
         ('YES', 'yes'),
         ('NO', 'no'),
     ]
@@ -33,17 +33,17 @@ class VehicleAuth(models.Model):
     department = models.CharField(max_length=255)
     cost_centre = models.IntegerField()
     Designation = models.CharField(max_length=255)
-    SDC = models.CharField(max_length=10,choices=SERVICE_DELIVERY_CENTRE)
+    SDC = models.CharField(max_length=10, choices=SERVICE_DELIVERY_CENTRE)
     resident_address = models.TextField()
-    secure_locked_place = models.CharField(max_length=3,choices=VEHICLE_SECURITY)
-    behind_locked_gates = models.CharField(max_length=3,choices=VEHICLE_SECURITY)
-    #start_date = models.DateField()
-    #end_date = models.DateField()
+    secure_locked_place = models.CharField(max_length=3, choices=VEHICLE_SECURITY)
+    behind_locked_gates = models.CharField(max_length=3, choices=VEHICLE_SECURITY)
+    start_date = models.DateField(blank=True, null=True)
+    end_date = models.DateField(blank=True, null=True)
     motivation = models.TextField()
     declaration = models.BooleanField(default=False)
     submitted_by = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=20,choices=STATUS_CHOICES,default='PENDING')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
 
     def __str__(self):
         return self.vehicle_registration

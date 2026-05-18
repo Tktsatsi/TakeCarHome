@@ -1,40 +1,91 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header text-center">
+                <h3 class="mb-0">Authorization Detail</h3>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p>
+                            <strong>Vehicle:</strong><br>
+                            {{ authorization.vehicle_decription }}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p>
+                            <strong>Registration:</strong><br>
+                            {{ authorization.vehicle_registration }}
+                        </p>
+                    </div>
+                </div>
 
-<h2>Authorization Detail</h2>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p>
+                            <strong>Employee Name:</strong><br>
+                            {{ authorization.surname_initials }}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p>
+                            <strong>Status:</strong><br>
+                            <span class="badge bg-{% if authorization.status == 'APPROVED' %}success{% elif authorization.status == 'REJECTED' %}danger{% else %}warning{% endif %}">
+                                {{ authorization.status }}
+                            </span>
+                        </p>
+                    </div>
+                </div>
 
-<div class="card">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p>
+                            <strong>Department:</strong><br>
+                            {{ authorization.department }}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p>
+                            <strong>SAP Number:</strong><br>
+                            {{ authorization.sap_no }}
+                        </p>
+                    </div>
+                </div>
 
-    <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p>
+                            <strong>Start Date:</strong><br>
+                            {{ authorization.start_date|date:"Y-m-d" }}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p>
+                            <strong>End Date:</strong><br>
+                            {{ authorization.end_date|date:"Y-m-d" }}
+                        </p>
+                    </div>
+                </div>
 
-        <p>
-            <strong>Vehicle:</strong>
-            {{ authorization.vehicle_description }}
-        </p>
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <p>
+                            <strong>Motivation:</strong><br>
+                            {{ authorization.motivation }}
+                        </p>
+                    </div>
+                </div>
 
-        <p>
-            <strong>Registration:</strong>
-            {{ authorization.registration_number }}
-        </p>
-
-        <p>
-            <strong>Employee:</strong>
-            {{ authorization.surname_initials }}
-        </p>
-
-        <p>
-            <strong>Status:</strong>
-            {{ authorization.status }}
-        </p>
-
-        <p>
-            <strong>Motivation:</strong>
-            {{ authorization.motivation }}
-        </p>
-
+                <div class="mt-4">
+                    <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+                        Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
-
 </div>
-
 {% endblock %}

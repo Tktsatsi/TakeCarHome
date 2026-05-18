@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-header text-center">
+                <h3 class="mb-0">Fleet Authorization</h3>
+                <p class="small text-white mb-0" style="margin-top: 0.5rem;">Login</p>
+            </div>
+            <div class="card-body">
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger" role="alert">
+                        {% for error in form.non_field_errors %}
+                            <p class="mb-0">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
+                        <input type="text" name="username" id="{{ form.username.id_for_label }}" class="form-control" placeholder="Username" required>
+                        {% if form.username.errors %}
+                            <div class="invalid-feedback d-block text-danger small">
+                                {{ form.username.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="{{ form.password.id_for_label }}" class="form-label">Password</label>
+                        <input type="password" name="password" id="{{ form.password.id_for_label }}" class="form-control" placeholder="Password" required>
+                        {% if form.password.errors %}
+                            <div class="invalid-feedback d-block text-danger small">
+                                {{ form.password.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100" style="font-weight: 600; padding: 0.7rem;">Login</button>
+                </form>
+
+                <div class="mt-4 text-center">
+                    <p class="text-muted small">
+                        Don't have an account? <a href="{% url 'register' %}" class="text-primary">Register here</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
