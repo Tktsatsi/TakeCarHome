@@ -97,7 +97,7 @@
                         <ul class="list-group">
                             {% for approval in approval_history %}
                             <li class="list-group-item">
-                                <strong>{{ approval.role }}:</strong> {{ approval.approved|yesno:"Approved,Rejected" }} by {{ approval.approved_by.username }} on {{ approval.signed_on|date:"Y-m-d H:i" }}
+                                <strong>{{ approval.role }}:</strong> {{ approval.get_display_status }} by {{ approval.approved_by.username }} on {{ approval.signed_on|date:"Y-m-d H:i" }}
                                 {% if approval.comments %}
                                     <div class="text-muted small">{{ approval.comments }}</div>
                                 {% endif %}

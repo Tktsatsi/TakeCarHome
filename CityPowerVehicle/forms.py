@@ -5,7 +5,10 @@ from .models import VehicleAuth
 
 
 class RegistrationForm(UserCreationForm):
-    email = forms.EmailField(required=False)
+    email = forms.EmailField(
+        required=True,
+        help_text='A valid email address is required.',
+    )
     first_name = forms.CharField(required=False)
     last_name = forms.CharField(required=False)
 
@@ -20,16 +23,31 @@ class RegistrationForm(UserCreationForm):
             'password2',
         ]
 
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if email and User.objects.filter(email=email).exists():
+            raise forms.ValidationError(
+                'This email address is already registered.'
+            )
+        return email
+
 
 class ApprovalForm(forms.Form):
-    decision = forms.ChoiceField(
-        choices=[
-            ('approve', 'Approve'),
-            ('reject', 'Reject'),
-        ],
-        widget=forms.RadioSelect,
-        initial='approve',
-    )
+    def __init__(self, *args, role=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Fleet manager only acknowledges
+        if role == 'FLEET MANAGER':
+            choices = [('acknowledge', 'Acknowledge')]
+        else:
+            choices = [
+                ('approve', 'Approve'),
+                ('reject', 'Reject'),
+            ]
+        self.fields['decision'] = forms.ChoiceField(
+            choices=choices,
+            widget=forms.RadioSelect,
+            initial=choices[0][0],
+        )
     comments = forms.CharField(
         widget=forms.Textarea(
             attrs={'class': 'form-control', 'rows': 4}
@@ -43,7 +61,17 @@ class VehicleAuthForm(forms.ModelForm):
     class Meta:
         model = VehicleAuth
 
-        exclude = ['submitted_by', 'status']
+        exclude = [
+            'submitted_by',
+            'status',
+            'next_approval_role',
+            'senior_manager_name',
+            'senior_manager_email',
+            'fleet_compliance_name',
+            'fleet_compliance_email',
+            'fleet_manager_name',
+            'fleet_manager_email',
+        ]
 
         widgets = {
             'vehicle_decription': forms.TextInput(
@@ -94,6 +122,12 @@ class VehicleAuthForm(forms.ModelForm):
             'declaration': forms.CheckboxInput(
                 attrs={'class': 'form-check-input'},
             ),
+            'line_manager_name': forms.TextInput(
+                attrs={'class': 'form-control'},
+            ),
+            'line_manager_email': forms.EmailInput(
+                attrs={'class': 'form-control'},
+            ),
         }
 
     def clean(self):
@@ -109,3 +143,45 @@ class VehicleAuthForm(forms.ModelForm):
             )
 
         return cleaned_data
+
+
+class ApprovalFormWithNextApprover(forms.Form):
+    """Form for approvers to review, decide, and enter next approver details."""
+
+    def __init__(self, *args, role=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.role = role
+        # Fleet manager only acknowledges
+        if role == 'FLEET MANAGER':
+            choices = [('acknowledge', 'Acknowledge')]
+        else:
+            choices = [
+                ('approve', 'Approve'),
+                ('reject', 'Reject'),
+            ]
+        self.fields['decision'] = forms.ChoiceField(
+            choices=choices,
+            widget=forms.RadioSelect,
+            initial=choices[0][0],
+        )
+        # Add next approver fields if not fleet manager
+        if role != 'FLEET MANAGER':
+            self.fields['next_approver_name'] = forms.CharField(
+                max_length=255,
+                required=True,
+                label='Next Approver Name',
+                widget=forms.TextInput(attrs={'class': 'form-control'}),
+            )
+            self.fields['next_approver_email'] = forms.EmailField(
+                required=True,
+                label='Next Approver Email',
+                widget=forms.EmailInput(attrs={'class': 'form-control'}),
+            )
+
+        self.fields['comments'] = forms.CharField(
+            widget=forms.Textarea(
+                attrs={'class': 'form-control', 'rows': 4}
+            ),
+            required=False,
+            label='Comments',
+        )

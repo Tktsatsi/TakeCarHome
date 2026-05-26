@@ -9,7 +9,7 @@
         </a>
     </div>
     <div class="card-body">
-        {% if authorizations %}
+        {% if authorizations_with_meta %}
         <div class="table-responsive">
             <table class="table table-bordered table-striped table-hover">
                 <thead class="table-dark">
@@ -23,7 +23,8 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for authorization in authorizations %}
+                    {% for item in authorizations_with_meta %}
+                    {% with authorization=item.authorization %}
                     <tr>
                         <td>{{ authorization.vehicle_decription }}</td>
                         <td>{{ authorization.vehicle_registration }}</td>
@@ -35,13 +36,18 @@
                         </td>
                         <td>{{ authorization.created_at|date:"Y-m-d H:i" }}</td>
                         <td class="d-flex gap-2 flex-wrap">
-                            <a href="{% url 'auth_detail' authorization.id %}" class="btn btn-sm btn-primary">View</a>
+                            {% if item.can_approve %}
+                                <a href="{% url 'approve_auth' authorization.id %}" class="btn btn-sm btn-primary">Review</a>
+                            {% else %}
+                                <a href="{% url 'auth_detail' authorization.id %}" class="btn btn-sm btn-primary">View</a>
+                            {% endif %}
                             {% if authorization.submitted_by == user and authorization.status == 'PENDING' %}
                                 <a href="{% url 'edit_auth' authorization.id %}" class="btn btn-sm btn-secondary">Edit</a>
                                 <a href="{% url 'delete_auth' authorization.id %}" class="btn btn-sm btn-danger">Delete</a>
                             {% endif %}
                         </td>
                     </tr>
+                    {% endwith %}
                     {% endfor %}
                 </tbody>
             </table>

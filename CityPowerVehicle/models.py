@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.urls import reverse
 
 SERVICE_DELIVERY_CENTRE = [
     ('REUVEN', 'reuven'),
@@ -77,9 +78,24 @@ class VehicleAuth(models.Model):
         choices=APPROVAL_ROLES,
         default='LINE MANAGER',
     )
+    # Manager contact details provided by applicant
+    line_manager_name = models.CharField(max_length=255, blank=True)
+    line_manager_email = models.EmailField(blank=True)
+    senior_manager_name = models.CharField(max_length=255, blank=True)
+    senior_manager_email = models.EmailField(blank=True)
+    fleet_compliance_name = models.CharField(max_length=255, blank=True)
+    fleet_compliance_email = models.EmailField(blank=True)
+    fleet_manager_name = models.CharField(max_length=255, blank=True)
+    fleet_manager_email = models.EmailField(blank=True)
 
     def __str__(self):
         return self.vehicle_registration
+
+    def get_absolute_url(self):
+        return reverse('auth_detail', args=[self.pk])
+
+    def get_approval_url(self):
+        return reverse('approve_auth', args=[self.pk])
 
     def is_editable_by(self, user):
         return self.status == 'PENDING' and self.submitted_by == user
@@ -93,7 +109,8 @@ class VehicleAuth(models.Model):
     def advance_approval(self):
         current_index = self.get_current_approval_index()
         if current_index + 1 < len(APPROVAL_ORDER):
-            self.next_approval_role = list(APPROVAL_ORDER.keys())[current_index + 1]
+            self.next_approval_role = list(
+                APPROVAL_ORDER.keys())[current_index + 1]
         else:
             self.status = 'APPROVED'
             self.next_approval_role = ''
@@ -103,7 +120,22 @@ class VehicleAuth(models.Model):
             return False
         if user.is_superuser:
             return True
-        return user.groups.filter(name=self.next_approval_role).exists()
+        if not self.next_approval_role:
+            return False
+        expected = self.next_approval_role.strip().lower()
+        return any(
+            group.name.strip().lower() == expected
+            for group in user.groups.all()
+        )
+
+    def get_manager_email(self, role_key):
+        mapping = {
+            'LINE MANAGER': self.line_manager_email,
+            'SENIOR MANAGER/GM': self.senior_manager_email,
+            'FLEET COMLPLIANCE': self.fleet_compliance_email,
+            'FLEET MANAGER': self.fleet_manager_email,
+        }
+        return mapping.get(role_key)
 
 
 class Approval(models.Model):
@@ -120,5 +152,11 @@ class Approval(models.Model):
         blank=True,
     )
     approved = models.BooleanField(default=False)
+    acknowledged = models.BooleanField(default=False)
     comments = models.TextField(blank=True)
     signed_on = models.DateTimeField(null=True, blank=True)
+
+    def get_display_status(self):
+        if self.acknowledged:
+            return 'Acknowledged'
+        return 'Approved' if self.approved else 'Rejected'
