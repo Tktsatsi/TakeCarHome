@@ -135,10 +135,15 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
 
-# Email Configuration - Console backend prints emails to terminal
+# Email Configuration - Console backend prints emails to terminal for development/testing
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'no-reply@example.com'
 
-# Optional: To save emails to files instead of console, uncomment below:
-# EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-EMAIL_FILE_PATH = BASE_DIR / 'sent_emails'
+# Send email for text purposes using SMTP (Gmail)
+# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# EMAIL_HOST = "smtp.gmail.com"
+## EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+##EMAIL_HOST_USER = "tktsatsi@gmail.com"
+##EMAIL_HOST_PASSWORD = "ydmhmntriayxspr"
+##DEFAULT_FROM_EMAIL = "Fleet Authorization <noreply@estore.com>"
