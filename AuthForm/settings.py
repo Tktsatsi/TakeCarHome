@@ -125,29 +125,19 @@ USE_TZ = True
 # Static files
 
 STATIC_URL = "static/"
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'dashboard'
+LOGOUT_REDIRECT_URL = 'login'
 
+# Email Configuration - Console backend prints emails to terminal for development/testing
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'no-reply@example.com'
 
-# Login settings
-
-LOGIN_URL = "login"
-LOGIN_REDIRECT_URL = "dashboard"
-LOGOUT_REDIRECT_URL = "login"
-
-
-# Email settings
-
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
-
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
-
-# Default primary key field type
-
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+# Send email for text purposes using SMTP (Gmail)
+# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# EMAIL_HOST = "smtp.gmail.com"
+## EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+##EMAIL_HOST_USER = "tktsatsi@gmail.com"
+##EMAIL_HOST_PASSWORD = "ydmhmntriayxspr"
+##DEFAULT_FROM_EMAIL = "Fleet Authorization <noreply@estore.com>"
