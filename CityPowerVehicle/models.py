@@ -88,6 +88,19 @@ class VehicleAuth(models.Model):
     fleet_manager_name = models.CharField(max_length=255, blank=True)
     fleet_manager_email = models.EmailField(blank=True)
 
+    # Track explicit permission-request state (persisted so admins can respond)
+    permission_requested = models.BooleanField(default=False)
+    permission_requested_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='permission_requests',
+    )
+    permission_requested_at = models.DateTimeField(null=True, blank=True)
+    permission_request_response = models.TextField(blank=True)
+    permission_request_responded_at = models.DateTimeField(null=True, blank=True)
+
     def __str__(self):
         return self.vehicle_registration
 

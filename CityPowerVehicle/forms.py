@@ -57,6 +57,16 @@ class ApprovalForm(forms.Form):
     )
 
 
+class RequestApprovalPermissionForm(forms.Form):
+    message = forms.CharField(
+        widget=forms.Textarea(
+            attrs={'class': 'form-control', 'rows': 4}
+        ),
+        required=True,
+        label='Reason for requesting approval rights',
+    )
+
+
 class VehicleAuthForm(forms.ModelForm):
     class Meta:
         model = VehicleAuth
@@ -130,6 +140,12 @@ class VehicleAuthForm(forms.ModelForm):
             ),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['line_manager_name'].required = True
+        self.fields['line_manager_email'].required = True
+        self.fields['declaration'].required = True
+
     def clean(self):
 
         cleaned_data = super().clean()
@@ -140,6 +156,12 @@ class VehicleAuthForm(forms.ModelForm):
         if start and end and end < start:
             raise forms.ValidationError(
                 'End date cannot be before start date.'
+            )
+
+        if not cleaned_data.get('declaration'):
+            self.add_error(
+                'declaration',
+                'You must accept the declaration to submit this form.',
             )
 
         return cleaned_data
@@ -168,12 +190,12 @@ class ApprovalFormWithNextApprover(forms.Form):
         if role != 'FLEET MANAGER':
             self.fields['next_approver_name'] = forms.CharField(
                 max_length=255,
-                required=True,
+                required=False,
                 label='Next Approver Name',
                 widget=forms.TextInput(attrs={'class': 'form-control'}),
             )
             self.fields['next_approver_email'] = forms.EmailField(
-                required=True,
+                required=False,
                 label='Next Approver Email',
                 widget=forms.EmailInput(attrs={'class': 'form-control'}),
             )
@@ -185,3 +207,21 @@ class ApprovalFormWithNextApprover(forms.Form):
             required=False,
             label='Comments',
         )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        decision = cleaned_data.get('decision')
+
+        if self.role != 'FLEET MANAGER' and decision == 'approve':
+            if not cleaned_data.get('next_approver_name'):
+                self.add_error(
+                    'next_approver_name',
+                    'This field is required when approving.',
+                )
+            if not cleaned_data.get('next_approver_email'):
+                self.add_error(
+                    'next_approver_email',
+                    'This field is required when approving.',
+                )
+
+        return cleaned_data

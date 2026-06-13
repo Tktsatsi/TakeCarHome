@@ -17,4 +17,9 @@ urlpatterns = [
         views.approve_auth,
         name='approve_auth',
     ),
+    path(
+        'authorization/<int:pk>/request-permission/',
+        views.request_approval_permission,
+        name='request_permission',
+    ),
 ]

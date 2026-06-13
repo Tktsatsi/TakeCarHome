@@ -10,6 +10,11 @@
     </div>
     <div class="card-body">
         {% if authorizations_with_meta %}
+        {% if viewed_count and viewed_count > 0 %}
+        <div class="alert alert-info" role="alert">
+            You have {{ viewed_count }} request{{ viewed_count|pluralize }} you recently viewed. They appear below.
+        </div>
+        {% endif %}
         <div class="table-responsive">
             <table class="table table-bordered table-striped table-hover">
                 <thead class="table-dark">
