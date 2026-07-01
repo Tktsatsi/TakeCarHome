@@ -27,3 +27,6 @@ class VehicleAuthForm(forms.ModelForm):
             )
 
         return cleaned_data
+    
+class registration(forms.ModelForm):
+    pass
