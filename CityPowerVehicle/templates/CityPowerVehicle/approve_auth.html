@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Application Review</h4>
+                </div>
+                <div class="card-body">
+                    <h5>Vehicle Details</h5>
+                    <table class="table table-bordered table-sm">
+                        <tr>
+                            <td><strong>Vehicle Registration:</strong></td>
+                            <td>{{ authorization.vehicle_registration }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Vehicle Description:</strong></td>
+                            <td>{{ authorization.vehicle_decription }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Odometer:</strong></td>
+                            <td>{{ authorization.odometer }}</td>
+                        </tr>
+                    </table>
+
+                    <h5>Driver Details</h5>
+                    <table class="table table-bordered table-sm">
+                        <tr>
+                            <td><strong>Name:</strong></td>
+                            <td>{{ authorization.surname_initials }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>SAP #:</strong></td>
+                            <td>{{ authorization.sap_no }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Department:</strong></td>
+                            <td>{{ authorization.department }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cost Centre:</strong></td>
+                            <td>{{ authorization.cost_centre }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Designation:</strong></td>
+                            <td>{{ authorization.Designation }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>SDC:</strong></td>
+                            <td>{{ authorization.SDC }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Address:</strong></td>
+                            <td>{{ authorization.resident_address }}</td>
+                        </tr>
+                    </table>
+
+                    <h5>Authorization Period</h5>
+                    <table class="table table-bordered table-sm">
+                        <tr>
+                            <td><strong>Start Date:</strong></td>
+                            <td>{{ authorization.start_date }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>End Date:</strong></td>
+                            <td>{{ authorization.end_date }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Motivation:</strong></td>
+                            <td>{{ authorization.motivation }}</td>
+                        </tr>
+                    </table>
+
+                    <h5>Security</h5>
+                    <table class="table table-bordered table-sm">
+                        <tr>
+                            <td><strong>Secured locked place:</strong></td>
+                            <td>{{ authorization.secure_locked_place }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Behind locked gates:</strong></td>
+                            <td>{{ authorization.behind_locked_gates }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">{{ current_role }} - Decision & Next Approver</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label><strong>Decision:</strong></label>
+                            {{ form.decision }}
+                            {% if form.decision.errors %}
+                                <div class="invalid-feedback d-block text-danger">
+                                    {{ form.decision.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        {% if current_role != 'FLEET MANAGER' %}
+                            <hr>
+                            <h6>Enter Next Approver Details</h6>
+                            <div class="mb-3">
+                                {{ form.next_approver_name.label_tag }}
+                                {{ form.next_approver_name }}
+                                {% if form.next_approver_name.errors %}
+                                    <div class="invalid-feedback d-block text-danger">
+                                        {{ form.next_approver_name.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form.next_approver_email.label_tag }}
+                                {{ form.next_approver_email }}
+                                {% if form.next_approver_email.errors %}
+                                    <div class="invalid-feedback d-block text-danger">
+                                        {{ form.next_approver_email.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            {{ form.comments.label_tag }}
+                            {{ form.comments }}
+                            {% if form.comments.errors %}
+                                <div class="invalid-feedback d-block text-danger small">
+                                    {{ form.comments.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div>
+                            <button type="submit" class="btn btn-success">Submit Review</button>
+                            <a href="{% url 'auth_detail' authorization.id %}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

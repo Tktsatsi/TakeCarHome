@@ -1,40 +1,144 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header text-center">
+                <h3 class="mb-0">Authorization Detail</h3>
+            </div>
+            <div class="card-body">
+                {% if permission_requested %}
+                <div class="alert alert-info" role="alert">
+                    You have requested approval for this authorization. An administrator has been notified.
+                </div>
+                {% endif %}
+                {% if rejection_notice %}
+                <div class="alert alert-danger" role="alert">
+                    <strong>Request Rejected</strong>
+                    <div>By: {{ rejection_notice.by }}</div>
+                    {% if rejection_notice.comments %}
+                        <div class="mt-2">Message: {{ rejection_notice.comments }}</div>
+                    {% endif %}
+                </div>
+                {% endif %}
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p>
+                            <strong>Vehicle:</strong><br>
+                            {{ authorization.vehicle_decription }}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p>
+                            <strong>Registration:</strong><br>
+                            {{ authorization.vehicle_registration }}
+                        </p>
+                    </div>
+                </div>
 
-<h2>Authorization Detail</h2>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p>
+                            <strong>Employee Name:</strong><br>
+                            {{ authorization.surname_initials }}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p>
+                            <strong>Status:</strong><br>
+                            <span class="badge bg-{% if authorization.status == 'APPROVED' %}success{% elif authorization.status == 'REJECTED' %}danger{% else %}warning{% endif %}">
+                                {{ authorization.status }}
+                            </span>
+                        </p>
+                    </div>
+                </div>
 
-<div class="card">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p>
+                            <strong>Department:</strong><br>
+                            {{ authorization.department }}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p>
+                            <strong>SAP Number:</strong><br>
+                            {{ authorization.sap_no }}
+                        </p>
+                    </div>
+                </div>
 
-    <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p>
+                            <strong>Start Date:</strong><br>
+                            {{ authorization.start_date|date:"Y-m-d" }}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p>
+                            <strong>End Date:</strong><br>
+                            {{ authorization.end_date|date:"Y-m-d" }}
+                        </p>
+                    </div>
+                </div>
 
-        <p>
-            <strong>Vehicle:</strong>
-            {{ authorization.vehicle_description }}
-        </p>
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <p>
+                            <strong>Motivation:</strong><br>
+                            {{ authorization.motivation }}
+                        </p>
+                    </div>
+                </div>
 
-        <p>
-            <strong>Registration:</strong>
-            {{ authorization.registration_number }}
-        </p>
+                {% if authorization.status == 'PENDING' and next_role_label %}
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <p>
+                            <strong>Next Approval Step:</strong><br>
+                            {{ next_role_label }}
+                        </p>
+                    </div>
+                </div>
+                {% endif %}
 
-        <p>
-            <strong>Employee:</strong>
-            {{ authorization.surname_initials }}
-        </p>
+                {% if approval_history.exists %}
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <h6>Approval History</h6>
+                        <ul class="list-group">
+                            {% for approval in approval_history %}
+                            <li class="list-group-item">
+                                <strong>{{ approval.role }}:</strong> {{ approval.get_display_status }} by {{ approval.approved_by.username }} on {{ approval.signed_on|date:"Y-m-d H:i" }}
+                                {% if approval.comments %}
+                                    <div class="text-muted small">{{ approval.comments }}</div>
+                                {% endif %}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                {% endif %}
 
-        <p>
-            <strong>Status:</strong>
-            {{ authorization.status }}
-        </p>
-
-        <p>
-            <strong>Motivation:</strong>
-            {{ authorization.motivation }}
-        </p>
-
+                <div class="d-flex gap-2 flex-wrap">
+                    {% if can_edit %}
+                        <a href="{% url 'edit_auth' authorization.id %}" class="btn btn-primary">Edit</a>
+                    {% endif %}
+                    {% if can_delete %}
+                        <a href="{% url 'delete_auth' authorization.id %}" class="btn btn-danger">Delete</a>
+                    {% endif %}
+                    {% if can_approve %}
+                        <a href="{% url 'approve_auth' authorization.id %}" class="btn btn-success">Approve / Review</a>
+                    {% endif %}
+                    {% if can_request_permission and not permission_requested %}
+                        <a href="{% url 'request_permission' authorization.id %}" class="btn btn-warning">Request approval access</a>
+                    {% endif %}
+                    <a href="{% url 'dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+                </div>
+            </div>
+        </div>
     </div>
-
 </div>
-
 {% endblock %}

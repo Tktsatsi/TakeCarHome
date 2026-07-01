@@ -2,26 +2,157 @@
 <html>
 <head>
     <title>City Power Fleet Authorization</title>
+    
+    {% if user.is_authenticated %}
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    {% endif %}
 
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
         rel="stylesheet"
     >
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #4a3fb8 0%, #6366f1 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar {
+            background-color: white !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4a3fb8 !important;
+        }
+
+        .container {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+
+        .card {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .card-header {
+            border-radius: 8px 8px 0 0 !important;
+            background: linear-gradient(135deg, #4a3fb8 0%, #6366f1 100%) !important;
+            color: white !important;
+            border: none;
+            padding: 1.5rem;
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4a3fb8 0%, #6366f1 100%);
+            border: none;
+            border-radius: 6px;
+            padding: 0.6rem 1.5rem;
+            font-weight: 500;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #3d32a3 0%, #5558e3 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(74, 63, 184, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+
+        .form-control {
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            padding: 0.7rem 1rem;
+        }
+
+        .form-control:focus {
+            border-color: #4a3fb8;
+            box-shadow: 0 0 0 0.2rem rgba(74, 63, 184, 0.25);
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .badge {
+            padding: 0.5rem 0.75rem;
+            border-radius: 4px;
+        }
+
+        a {
+            color: #4a3fb8;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: #6366f1;
+            text-decoration: underline;
+        }
+
+        .text-muted {
+            color: #666 !important;
+        }
+
+        .alert {
+            border-radius: 6px;
+        }
+
+        .table {
+            border-collapse: collapse;
+        }
+
+        .table thead {
+            background: linear-gradient(135deg, #4a3fb8 0%, #6366f1 100%);
+            color: white;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+    </style>
 </head>
 <body>
 
-<nav class="navbar navbar-dark bg-dark">
+<nav class="navbar navbar-light">
     <div class="container-fluid">
-        <span class="navbar-brand mb-0 h1">
+        <span class="navbar-brand">
             Fleet Authorization
         </span>
+         {% if user.is_authenticated %}
+        <div>
+            <span class="me-3">Welcome, {{ user.username }}</span>
+            <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-danger">Logout</a>
+        </div>
+        {% endif %}
     </div>
 </nav>
 
-<div class="container mt-4">
+<div class="container">
     {% block content %}
     {% endblock %}
 </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
