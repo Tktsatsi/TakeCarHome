@@ -158,6 +158,12 @@ class VehicleAuthForm(forms.ModelForm):
                 'End date cannot be before start date.'
             )
 
+<<<<<<< HEAD
+        return cleaned_data
+    
+class registration(forms.ModelForm):
+    pass
+=======
         if not cleaned_data.get('declaration'):
             self.add_error(
                 'declaration',
@@ -225,3 +231,4 @@ class ApprovalFormWithNextApprover(forms.Form):
                 )
 
         return cleaned_data
+>>>>>>> def663ce455ccb6f1206603fb4eb631a8dc27885
