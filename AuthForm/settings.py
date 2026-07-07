@@ -34,6 +34,9 @@ ALLOWED_HOSTS = [
     ).split(",")
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://takecarhome.orangehill-85d1eaf4.southafricanorth.azurecontainerapps.io",
+]
 
 # Application definition
 
