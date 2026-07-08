@@ -252,104 +252,7 @@ def approve_auth(request, pk):
 @login_required
 @never_cache
 def request_approval_permission(request, pk):
-    authorization = get_object_or_404(VehicleAuth, pk=pk)
-    if authorization.status != 'PENDING':
-        return redirect('auth_detail', pk=pk)
-
-    current_role = authorization.next_approval_role
-    if user_has_role(request.user, current_role):
-        return redirect('approve_auth', pk=pk)
-
-    # Prevent duplicate permission requests if already requested and not yet responded
-    if authorization.permission_requested and not authorization.permission_request_response:
-        messages.info(
-            request,
-            'You have already requested approval for this authorization. An administrator has been notified.',
-        )
-        return redirect('auth_detail', pk=pk)
-
-    if request.method == 'POST':
-        form = RequestApprovalPermissionForm(request.POST)
-        if form.is_valid():
-            message_text = form.cleaned_data['message']
-            admin_emails = [
-                email for _, email in getattr(settings, 'ADMINS', [])
-                if email
-            ]
-            if not admin_emails:
-                admin_emails = list(
-                    User.objects.filter(is_superuser=True)
-                    .exclude(email='')
-                    .values_list('email', flat=True)
-                )
-            if not admin_emails:
-                default_email = getattr(settings, 'DEFAULT_FROM_EMAIL', None)
-                if default_email:
-                    admin_emails = [default_email]
-
-            subject = (
-                f"Approval access request for {authorization.vehicle_registration}"
-            )
-            link = request.build_absolute_uri(
-                authorization.get_approval_url()
-            )
-            applicant = (
-                request.user.get_full_name() or request.user.username
-            )
-            message = (
-                f"User: {applicant}\n"
-                f"Requested role: {current_role or 'Approval'}\n"
-                f"Authorization: {authorization.vehicle_registration}\n"
-                f"Request message:\n{message_text}\n\n"
-                f"Review link: {link}"
-            )
-
-            if admin_emails:
-                try:
-                    if getattr(settings, 'ADMINS', None):
-                        mail_admins(subject, message)
-                    else:
-                        send_mail(
-                            subject,
-                            message,
-                            getattr(settings, 'DEFAULT_FROM_EMAIL', None),
-                            admin_emails,
-                        )
-                    print(f"\n✓ PERMISSION EMAIL SENT TO: {admin_emails}\n")
-                    # persist request on the authorization so it can't be re-requested until an admin responds
-                    try:
-                        authorization.permission_requested = True
-                        authorization.permission_requested_by = request.user
-                        authorization.permission_requested_at = timezone.now()
-                        authorization.permission_request_response = ''
-                        authorization.permission_request_responded_at = None
-                        authorization.save()
-                    except Exception:
-                        pass
-                except Exception as e:
-                    print(f"\n✗ PERMISSION EMAIL FAILED: {type(e).__name__}: {e}\n")
-            else:
-                print(
-                    "\n✗ NO ADMIN EMAIL CONFIGURED FOR PERMISSION REQUEST."
-                )
-
-            messages.success(
-                request,
-                'Your request has been sent to an administrator.',
-            )
-            return redirect('auth_detail', pk=pk)
-    else:
-        form = RequestApprovalPermissionForm()
-
-    return render(
-        request,
-        'CityPowerVehicle/request_permission.html',
-        {
-            'form': form,
-            'authorization': authorization,
-            'current_role': current_role,
-        },
-    )
+    return redirect('auth_detail', pk=pk)
 
 
 @login_required
@@ -487,15 +390,6 @@ def auth_detail(request, pk):
         )
     )
 
-    can_request_permission = (
-        authorization.status == 'PENDING'
-        and not can_approve
-    )
-
-    # Determine if the current user has already requested permission (persisted)
-    permission_requested = bool(authorization.permission_requested)
-    permission_request_response = authorization.permission_request_response or None
-
     # If this authorization was rejected, surface the latest rejection details
     rejection_notice = None
     if authorization.status == 'REJECTED':
@@ -531,10 +425,7 @@ def auth_detail(request, pk):
             'can_edit': authorization.is_editable_by(request.user),
             'can_delete': authorization.is_deletable_by(request.user),
             'can_approve': can_approve,
-            'can_request_permission': can_request_permission,
             'next_role_label': next_role_label,
-            'permission_requested': permission_requested,
-            'permission_request_response': permission_request_response,
             'rejection_notice': rejection_notice,
         },
     )

@@ -8,11 +8,6 @@
                 <h3 class="mb-0">Authorization Detail</h3>
             </div>
             <div class="card-body">
-                {% if permission_requested %}
-                <div class="alert alert-info" role="alert">
-                    You have requested approval for this authorization. An administrator has been notified.
-                </div>
-                {% endif %}
                 {% if rejection_notice %}
                 <div class="alert alert-danger" role="alert">
                     <strong>Request Rejected</strong>
@@ -131,9 +126,6 @@
                     {% endif %}
                     {% if can_approve %}
                         <a href="{% url 'approve_auth' authorization.id %}" class="btn btn-success">Approve / Review</a>
-                    {% endif %}
-                    {% if can_request_permission and not permission_requested %}
-                        <a href="{% url 'request_permission' authorization.id %}" class="btn btn-warning">Request approval access</a>
                     {% endif %}
                     <a href="{% url 'dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
                 </div>
