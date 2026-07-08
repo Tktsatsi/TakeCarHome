@@ -1,152 +1,339 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">Application Review</h4>
-                </div>
-                <div class="card-body">
-                    <h5>Vehicle Details</h5>
-                    <table class="table table-bordered table-sm">
-                        <tr>
-                            <td><strong>Vehicle Registration:</strong></td>
-                            <td>{{ authorization.vehicle_registration }}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Vehicle Description:</strong></td>
-                            <td>{{ authorization.vehicle_decription }}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Odometer:</strong></td>
-                            <td>{{ authorization.odometer }}</td>
-                        </tr>
-                    </table>
 
-                    <h5>Driver Details</h5>
-                    <table class="table table-bordered table-sm">
-                        <tr>
-                            <td><strong>Name:</strong></td>
-                            <td>{{ authorization.surname_initials }}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>SAP #:</strong></td>
-                            <td>{{ authorization.sap_no }}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Department:</strong></td>
-                            <td>{{ authorization.department }}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Cost Centre:</strong></td>
-                            <td>{{ authorization.cost_centre }}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Designation:</strong></td>
-                            <td>{{ authorization.Designation }}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>SDC:</strong></td>
-                            <td>{{ authorization.SDC }}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Address:</strong></td>
-                            <td>{{ authorization.resident_address }}</td>
-                        </tr>
-                    </table>
+<div class="page-header mb-4 d-flex justify-content-between align-items-center">
 
-                    <h5>Authorization Period</h5>
-                    <table class="table table-bordered table-sm">
-                        <tr>
-                            <td><strong>Start Date:</strong></td>
-                            <td>{{ authorization.start_date }}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>End Date:</strong></td>
-                            <td>{{ authorization.end_date }}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Motivation:</strong></td>
-                            <td>{{ authorization.motivation }}</td>
-                        </tr>
-                    </table>
+    <div>
+        <h2 class="fw-bold mb-1">
+            Vehicle Authorization Review
+        </h2>
 
-                    <h5>Security</h5>
-                    <table class="table table-bordered table-sm">
-                        <tr>
-                            <td><strong>Secured locked place:</strong></td>
-                            <td>{{ authorization.secure_locked_place }}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Behind locked gates:</strong></td>
-                            <td>{{ authorization.behind_locked_gates }}</td>
-                        </tr>
-                    </table>
-                </div>
+        <p class="text-muted mb-0">
+            Review the request before approving or rejecting it.
+        </p>
+    </div>
+
+    <span class="badge rounded-pill bg-warning text-dark px-4 py-2 fs-6">
+        {{ authorization.status }}
+    </span>
+
+</div>
+
+
+<div class="row g-4">
+
+    <!-- LEFT COLUMN -->
+
+    <div class="col-lg-8">
+
+        <!-- Vehicle -->
+
+        <div class="card shadow-sm border-0 mb-4">
+
+            <div class="card-header">
+                Vehicle Information
             </div>
 
-            <div class="card">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0">{{ current_role }} - Decision & Next Approver</h5>
-                </div>
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
+            <div class="card-body">
 
-                        <div class="mb-3">
-                            <label><strong>Decision:</strong></label>
-                            {{ form.decision }}
-                            {% if form.decision.errors %}
-                                <div class="invalid-feedback d-block text-danger">
-                                    {{ form.decision.errors.0 }}
-                                </div>
-                            {% endif %}
+                <div class="row">
+
+                    <div class="col-md-4 mb-4">
+                        <label class="form-label text-muted">Registration</label>
+                        <div class="info-value">
+                            {{ authorization.vehicle_registration }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 mb-4">
+                        <label class="form-label text-muted">Vehicle</label>
+                        <div class="info-value">
+                            {{ authorization.vehicle_decription }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 mb-4">
+                        <label class="form-label text-muted">Odometer</label>
+                        <div class="info-value">
+                            {{ authorization.odometer }}
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Employee -->
+
+        <div class="card shadow-sm border-0 mb-4">
+
+            <div class="card-header">
+                Employee Information
+            </div>
+
+            <div class="card-body">
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label text-muted">Employee</label>
+                        <div class="info-value">
+                            {{ authorization.surname_initials }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label text-muted">SAP Number</label>
+                        <div class="info-value">
+                            {{ authorization.sap_no }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label text-muted">Department</label>
+                        <div class="info-value">
+                            {{ authorization.department }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label text-muted">Cost Centre</label>
+                        <div class="info-value">
+                            {{ authorization.cost_centre }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label text-muted">Designation</label>
+                        <div class="info-value">
+                            {{ authorization.Designation }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label text-muted">SDC</label>
+                        <div class="info-value">
+                            {{ authorization.SDC }}
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label text-muted">
+                            Residential Address
+                        </label>
+
+                        <div class="info-value">
+                            {{ authorization.resident_address }}
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Authorization -->
+
+        <div class="card shadow-sm border-0 mb-4">
+
+            <div class="card-header">
+                Authorization Details
+            </div>
+
+            <div class="card-body">
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-4">
+
+                        <label class="form-label text-muted">
+                            Start Date
+                        </label>
+
+                        <div class="info-value">
+                            {{ authorization.start_date }}
                         </div>
 
-                        {% if current_role != 'FLEET MANAGER' %}
-                            <hr>
-                            <h6>Enter Next Approver Details</h6>
-                            <div class="mb-3">
-                                {{ form.next_approver_name.label_tag }}
-                                {{ form.next_approver_name }}
-                                {% if form.next_approver_name.errors %}
-                                    <div class="invalid-feedback d-block text-danger">
-                                        {{ form.next_approver_name.errors.0 }}
-                                    </div>
-                                {% endif %}
-                            </div>
+                    </div>
 
-                            <div class="mb-3">
-                                {{ form.next_approver_email.label_tag }}
-                                {{ form.next_approver_email }}
-                                {% if form.next_approver_email.errors %}
-                                    <div class="invalid-feedback d-block text-danger">
-                                        {{ form.next_approver_email.errors.0 }}
-                                    </div>
-                                {% endif %}
-                            </div>
+                    <div class="col-md-6 mb-4">
+
+                        <label class="form-label text-muted">
+                            End Date
+                        </label>
+
+                        <div class="info-value">
+                            {{ authorization.end_date }}
+                        </div>
+
+                    </div>
+
+                    <div class="col-12">
+
+                        <label class="form-label text-muted">
+                            Motivation
+                        </label>
+
+                        <div class="info-value" style="min-height:130px;white-space:pre-line;">
+                            {{ authorization.motivation }}
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Security -->
+
+        <div class="card shadow-sm border-0">
+
+            <div class="card-header">
+                Vehicle Security
+            </div>
+
+            <div class="card-body">
+
+                <div class="row">
+
+                    <div class="col-md-6">
+
+                        <label class="form-label text-muted">
+                            Secure Locked Place
+                        </label>
+
+                        <div class="info-value">
+                            {{ authorization.secure_locked_place }}
+                        </div>
+
+                    </div>
+
+                    <div class="col-md-6">
+
+                        <label class="form-label text-muted">
+                            Behind Locked Gates
+                        </label>
+
+                        <div class="info-value">
+                            {{ authorization.behind_locked_gates }}
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- RIGHT COLUMN -->
+
+    <div class="col-lg-4">
+
+        <div class="card shadow-sm border-0 review-sidebar">
+
+            <div class="card-header">
+
+                <h5 class="mb-0">
+                    {{ current_role }}
+                </h5>
+
+            </div>
+
+            <div class="card-body">
+
+                <form method="post">
+
+                    {% csrf_token %}
+
+                    <div class="mb-4">
+
+                        <label class="fw-semibold mb-3">
+                            Decision
+                        </label>
+
+                        {{ form.decision }}
+
+                        {% if form.decision.errors %}
+                        <div class="text-danger small mt-2">
+                            {{ form.decision.errors }}
+                        </div>
                         {% endif %}
 
-                        <div class="mb-3">
-                            {{ form.comments.label_tag }}
-                            {{ form.comments }}
-                            {% if form.comments.errors %}
-                                <div class="invalid-feedback d-block text-danger small">
-                                    {{ form.comments.errors.0 }}
-                                </div>
-                            {% endif %}
-                        </div>
+                    </div>
 
-                        <div>
-                            <button type="submit" class="btn btn-success">Submit Review</button>
-                            <a href="{% url 'auth_detail' authorization.id %}" class="btn btn-secondary">Cancel</a>
-                        </div>
-                    </form>
-                </div>
+                    {% if current_role != 'FLEET MANAGER' %}
+
+                    <div class="mb-3">
+
+                        {{ form.next_approver_name.label_tag }}
+
+                        {{ form.next_approver_name }}
+
+                        {{ form.next_approver_name.errors }}
+
+                    </div>
+
+                    <div class="mb-4">
+
+                        {{ form.next_approver_email.label_tag }}
+
+                        {{ form.next_approver_email }}
+
+                        {{ form.next_approver_email.errors }}
+
+                    </div>
+
+                    {% endif %}
+
+                    <div class="mb-4">
+
+                        {{ form.comments.label_tag }}
+
+                        {{ form.comments }}
+
+                        {{ form.comments.errors }}
+
+                    </div>
+
+                    <div class="d-grid gap-2">
+
+                        <button type="submit"
+                                class="btn btn-success">
+
+                            Submit Decision
+
+                        </button>
+
+                        <a href="{% url 'auth_detail' authorization.id %}"
+                           class="btn btn-outline-secondary">
+
+                            Back to Request
+
+                        </a>
+
+                    </div>
+
+                </form>
+
             </div>
+
         </div>
+
     </div>
+
 </div>
+
 {% endblock %}

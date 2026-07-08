@@ -1,37 +1,222 @@
 {% extends 'base.html' %}
 
+{% block title %}Request Approval Permission{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header bg-warning text-white">
-                    <h4 class="mb-0">Request Approval Permission</h4>
+
+<div class="row justify-content-center">
+
+    <div class="col-lg-8">
+
+        <div class="card border-0 shadow-sm">
+
+            <div class="card-header">
+
+                <div class="d-flex align-items-center">
+
+                    <i class="bi bi-shield-lock-fill fs-2 me-3"></i>
+
+                    <div>
+
+                        <h3 class="mb-1">
+                            Request Approval Permission
+                        </h3>
+
+                        <small class="text-white">
+                            Approval rights are required before you can review this request.
+                        </small>
+
+                    </div>
+
                 </div>
-                <div class="card-body">
-                    <p>
-                        You are not currently authorized to approve this request.
-                        Submit a request and an administrator will be notified.
-                    </p>
-                    <form method="post">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            {{ form.message.label_tag }}
-                            {{ form.message }}
-                            {% if form.message.errors %}
-                                <div class="invalid-feedback d-block text-danger">
-                                    {{ form.message.errors.0 }}
-                                </div>
-                            {% endif %}
-                        </div>
-                        <div class="d-flex gap-2 flex-wrap">
-                            <button type="submit" class="btn btn-primary">Send request</button>
-                            <a href="{% url 'auth_detail' authorization.id %}" class="btn btn-secondary">Back to request</a>
-                        </div>
-                    </form>
-                </div>
+
             </div>
+
+            <div class="card-body p-4">
+
+                <div class="alert alert-warning border-0">
+
+                    <div class="d-flex">
+
+                        <i class="bi bi-exclamation-circle-fill fs-4 me-3"></i>
+
+                        <div>
+
+                            <strong>Approval Permission Required</strong>
+
+                            <p class="mb-0 mt-2">
+
+                                You are currently not assigned as an approver for this authorization.
+                                Submit a permission request below and a system administrator will review your request.
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="card bg-light border-0 mt-4 mb-4">
+
+                    <div class="card-body">
+
+                        <h6 class="fw-bold mb-3">
+
+                            Request Summary
+
+                        </h6>
+
+                        <div class="row">
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="text-muted small">
+
+                                    Vehicle
+
+                                </label>
+
+                                <div class="fw-semibold">
+
+                                    {{ authorization.vehicle_decription }}
+
+                                </div>
+
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="text-muted small">
+
+                                    Registration
+
+                                </label>
+
+                                <div class="fw-semibold">
+
+                                    {{ authorization.vehicle_registration }}
+
+                                </div>
+
+                            </div>
+
+                            <div class="col-md-6">
+
+                                <label class="text-muted small">
+
+                                    Employee
+
+                                </label>
+
+                                <div class="fw-semibold">
+
+                                    {{ authorization.surname_initials }}
+
+                                </div>
+
+                            </div>
+
+                            <div class="col-md-6">
+
+                                <label class="text-muted small">
+
+                                    Current Status
+
+                                </label>
+
+                                <div>
+
+                                    {% if authorization.status == "APPROVED" %}
+                                        <span class="badge bg-success rounded-pill">
+                                            Approved
+                                        </span>
+                                    {% elif authorization.status == "REJECTED" %}
+                                        <span class="badge bg-danger rounded-pill">
+                                            Rejected
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark rounded-pill">
+                                            Pending
+                                        </span>
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <form method="post">
+
+                    {% csrf_token %}
+
+                    <div class="mb-4">
+
+                        <label class="form-label fw-semibold">
+
+                            Why do you require approval access?
+
+                        </label>
+
+                        {{ form.message }}
+
+                        {% if form.message.errors %}
+
+                            <div class="text-danger small mt-2">
+
+                                {{ form.message.errors.0 }}
+
+                            </div>
+
+                        {% endif %}
+
+                        <div class="form-text">
+
+                            Include your role, department and why you should approve this request.
+
+                        </div>
+
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-end gap-3">
+
+                        <a href="{% url 'auth_detail' authorization.id %}"
+
+                           class="btn btn-outline-secondary">
+
+                            <i class="bi bi-arrow-left me-2"></i>
+
+                            Back
+
+                        </a>
+
+                        <button type="submit"
+
+                                class="btn btn-primary px-4">
+
+                            <i class="bi bi-send-fill me-2"></i>
+
+                            Submit Permission Request
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
         </div>
+
     </div>
+
 </div>
+
 {% endblock %}

@@ -1,79 +1,344 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header text-center">
-                <h3 class="mb-0">{% if is_edit %}Edit Vehicle Authorization{% else %}Create Vehicle Authorization{% endif %}</h3>
-            </div>
-            <div class="card-body">
-                {% if form.non_field_errors %}
-                    <div class="alert alert-danger" role="alert">
-                        {% for error in form.non_field_errors %}
-                            <p>{{ error }}</p>
-                        {% endfor %}
-                    </div>
-                {% endif %}
 
-                <form method="POST">
-                    {% csrf_token %}
+<div class="container py-4">
 
-                    <div class="row">
-                        {% for field in form %}
-                        {% if field.field.widget.input_type == "checkbox" %}
-                        <div class="col-md-12 mb-3">
-                            {% if field.name == 'declaration' %}
-                                <p class="text-muted small mb-2">
-                                    •	The vehicle must be securely locked and parked behind locked gates and the employee is held responsible and accountable for the safety of the vehicle at all times.
-                                    •	All tools/equipment stored in the vehicle must be securely locked in the vehicle, or in a separate lockable toolbox.
-                                    •	The vehicle is to be used solely for the execution of City Power business within the period of this authorization. It is not permissible to use the vehicle for any private matters.
-                                    •	If you fall sick and are unable to continue with the duties while the vehicle is in your position, you are 
-                                        to notify your team leader who will arrange for the vehicle to be collected within 24 hours.
+    <div class="row justify-content-center">
 
-                                    I declare that all information supplied above are true and correct.
+        <div class="col-lg-10">
 
-                                </p>
-                            {% endif %}
-                            <div class="form-check">
-                                {{ field }}
-                                <label class="form-check-label" for="{{ field.id_for_label }}">
-                                    {{ field.label }}
-                                </label>
-                            </div>
-                            {% if field.errors %}
-                                <div class="invalid-feedback d-block text-danger small">
-                                    {{ field.errors.0 }}
-                                </div>
-                            {% endif %}
-                        </div>
+            <div class="card shadow-sm border-0">
+
+                <div class="card-header bg-primary text-white py-3">
+                    <h3 class="mb-0">
+                        {% if is_edit %}
+                        Edit Vehicle Authorization
                         {% else %}
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ field.id_for_label }}" class="form-label">
-                                {{ field.label }}
-                            </label>
-                            {% if field.field.widget.input_type == "textarea" %}
-                                <textarea name="{{ field.name }}" class="form-control" rows="4"{% if field.value %}value="{{ field.value }}"{% endif %}></textarea>
-                            {% else %}
-                                {{ field }}
-                            {% endif %}
-                            {% if field.errors %}
-                                <div class="invalid-feedback d-block text-danger small">
-                                    {{ field.errors.0 }}
-                                </div>
-                            {% endif %}
-                        </div>
+                        Vehicle Authorization Request
                         {% endif %}
-                        {% endfor %}
+                    </h3>
+                </div>
+
+                <div class="card-body">
+
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
                     </div>
-                
-                    <button type="submit" class="btn btn-primary">
-                        Submit Authorization
-                    </button>
-                    <a href="{% url 'dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
-                </form>
+                    {% endif %}
+
+                    <form method="POST">
+
+                        {% csrf_token %}
+
+                        <!-- ====================================== -->
+                        <!-- Vehicle Information -->
+                        <!-- ====================================== -->
+
+                        <h5 class="border-bottom pb-2 mb-4">
+                            Vehicle Information
+                        </h5>
+
+                        <div class="row">
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">
+                                    Vehicle Description
+                                </label>
+
+                                {{ form.vehicle_decription }}
+
+                                {{ form.vehicle_decription.errors }}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">
+                                    Registration Number
+                                </label>
+
+                                {{ form.vehicle_registration }}
+
+                                {{ form.vehicle_registration.errors }}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">
+                                    Current Odometer
+                                </label>
+
+                                {{ form.odometer }}
+
+                                {{ form.odometer.errors }}
+                            </div>
+
+                        </div>
+
+                        <!-- ====================================== -->
+                        <!-- Employee -->
+                        <!-- ====================================== -->
+
+                        <h5 class="border-bottom pb-2 mt-4 mb-4">
+                            Employee Information
+                        </h5>
+
+                        <div class="row">
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">
+                                    Employee Name
+                                </label>
+
+                                {{ form.surname_initials }}
+
+                                {{ form.surname_initials.errors }}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">
+                                    SAP Number
+                                </label>
+
+                                {{ form.sap_no }}
+
+                                {{ form.sap_no.errors }}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">
+                                    Department
+                                </label>
+
+                                {{ form.department }}
+
+                                {{ form.department.errors }}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">
+                                    Cost Centre
+                                </label>
+
+                                {{ form.cost_centre }}
+
+                                {{ form.cost_centre.errors }}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">
+                                    Designation
+                                </label>
+
+                                {{ form.Designation }}
+
+                                {{ form.Designation.errors }}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">
+                                    Service Delivery Centre
+                                </label>
+
+                                {{ form.SDC }}
+
+                                {{ form.SDC.errors }}
+                            </div>
+
+                        </div>
+
+                        <!-- ====================================== -->
+                        <!-- Residential -->
+                        <!-- ====================================== -->
+
+                        <h5 class="border-bottom pb-2 mt-4 mb-4">
+                            Residential Information
+                        </h5>
+
+                        <div class="row">
+
+                            <div class="col-12 mb-3">
+
+                                <label class="form-label fw-semibold">
+                                    Residential Address
+                                </label>
+
+                                {{ form.resident_address }}
+
+                                {{ form.resident_address.errors }}
+
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="form-label fw-semibold">
+                                    Secure Locked Parking
+                                </label>
+
+                                {{ form.secure_locked_place }}
+
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="form-label fw-semibold">
+                                    Behind Locked Gates
+                                </label>
+
+                                {{ form.behind_locked_gates }}
+
+                            </div>
+
+                        </div>
+
+                        <!-- ====================================== -->
+                        <!-- Authorization -->
+                        <!-- ====================================== -->
+
+                        <h5 class="border-bottom pb-2 mt-4 mb-4">
+                            Authorization Period
+                        </h5>
+
+                        <div class="row">
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="form-label fw-semibold">
+                                    Start Date
+                                </label>
+
+                                {{ form.start_date }}
+
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="form-label fw-semibold">
+                                    End Date
+                                </label>
+
+                                {{ form.end_date }}
+
+                            </div>
+
+                            <div class="col-12 mb-3">
+
+                                <label class="form-label fw-semibold">
+                                    Motivation
+                                </label>
+
+                                {{ form.motivation }}
+
+                            </div>
+
+                        </div>
+
+                        <!-- ====================================== -->
+                        <!-- Line Manager -->
+                        <!-- ====================================== -->
+
+                        <h5 class="border-bottom pb-2 mt-4 mb-4">
+                            Line Manager
+                        </h5>
+
+                        <div class="row">
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="form-label fw-semibold">
+                                    Line Manager Name
+                                </label>
+
+                                {{ form.line_manager_name }}
+
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="form-label fw-semibold">
+                                    Line Manager Email
+                                </label>
+
+                                {{ form.line_manager_email }}
+
+                            </div>
+
+                        </div>
+
+                        <!-- ====================================== -->
+                        <!-- Declaration -->
+                        <!-- ====================================== -->
+
+                        <h5 class="border-bottom pb-2 mt-4 mb-4">
+                            Declaration
+                        </h5>
+
+                        <div class="alert alert-light border">
+
+                            <ul class="mb-3">
+
+                                <li>The vehicle must always be securely locked.</li>
+
+                                <li>The vehicle must be parked behind locked gates where possible.</li>
+
+                                <li>City Power vehicles may only be used for official duties.</li>
+
+                                <li>All tools and equipment remain your responsibility.</li>
+
+                                <li>You are responsible for reporting incidents immediately.</li>
+
+                            </ul>
+
+                            <div class="form-check">
+
+                                {{ form.declaration }}
+
+                                <label class="form-check-label">
+
+                                    I declare that all information supplied above is true and correct.
+
+                                </label>
+
+                            </div>
+
+                            {{ form.declaration.errors }}
+
+                        </div>
+
+                        <!-- ====================================== -->
+                        <!-- Buttons -->
+                        <!-- ====================================== -->
+
+                        <div class="d-flex justify-content-end gap-3 mt-4">
+
+                            <a href="{% url 'dashboard' %}"
+                               class="btn btn-outline-secondary">
+
+                                Cancel
+
+                            </a>
+
+                            <button class="btn btn-primary px-5">
+
+                                {% if is_edit %}
+                                    Update Authorization
+                                {% else %}
+                                    Submit Authorization
+                                {% endif %}
+
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
             </div>
+
         </div>
+
     </div>
+
 </div>
+
 {% endblock %}

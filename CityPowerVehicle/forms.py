@@ -81,6 +81,12 @@ class VehicleAuthForm(forms.ModelForm):
             'fleet_compliance_email',
             'fleet_manager_name',
             'fleet_manager_email',
+
+            'permission_requested',
+            'permission_requested_by',
+            'permission_requested_at',
+            'permission_request_response',
+            'permission_request_responded_at',
         ]
 
         widgets = {
