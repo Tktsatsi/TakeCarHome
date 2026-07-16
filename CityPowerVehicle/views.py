@@ -1,6 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
 from django.views.decorators.cache import never_cache
 from django.utils import timezone
 from .models import VehicleAuth, Approval, APPROVAL_ROLES
@@ -29,6 +28,7 @@ def user_has_role(user, role):
 
 
 def user_is_approval_manager(user):
+
     if user.is_superuser:
         return True
     approval_groups = {role.strip().lower() for role, _ in APPROVAL_ROLES}
@@ -37,6 +37,22 @@ def user_is_approval_manager(user):
         for group in user.groups.all()
     )
 
+def get_expected_approver_email(auth):
+    role = auth.next_approval_role
+
+    if role == "LINE MANAGER":
+        return auth.line_manager_email
+
+    elif role == "SENIOR MANAGER/GM":
+        return auth.senior_manager_email
+
+    elif role == "FLEET COMPLIANCE":
+        return auth.fleet_compliance_email
+
+    elif role == "FLEET MANAGER":
+        return auth.fleet_manager_email
+
+    return None
 
 def logout_view(request):
     """Log out the user and redirect to the login page.
@@ -109,24 +125,48 @@ def delete_auth(request, pk):
 @never_cache
 def approve_auth(request, pk):
     """Handle approval workflow where approvers can enter next approver details."""
+
     authorization = get_object_or_404(VehicleAuth, pk=pk)
     if authorization.status != 'PENDING':
         return redirect('auth_detail', pk=pk)
 
     current_role = authorization.next_approval_role
-    if not user_has_role(request.user, current_role):
-        return redirect('request_permission', pk=pk)
+    has_permission = user_has_role(request.user, current_role)
+
+    approver_email = get_expected_approver_email(authorization)
+
+    is_expected_approver =(
+        approver_email 
+        and request.user.email.lower() == approver_email.lower()
+    )
+
+    # only the assigned approver may open the review page
+    if not is_expected_approver:
+        messages.error(
+            request,
+            "This request is assigned to another approver."
+        )
+        return redirect("auth_detail", pk=pk)
+    
+    existing = Approval.objects.filter(
+        authorization=authorization,
+        role=current_role,
+        approved_by=request.user,
+    ).exists()
+
+    if existing:
+        messages.info(request, "You have already reviewed this request.")
+        return redirect("auth_detail", pk=pk)
 
     if request.method == 'POST':
-        form = ApprovalFormWithNextApprover(
-            request.POST,
-            role=current_role,
-        )
+        if not has_permission:
+            return redirect("request_permission", pk=pk)
+        
+        form = ApprovalFormWithNextApprover(request.POST, role=current_role)
         if form.is_valid():
             decision = form.cleaned_data['decision']
             comments = form.cleaned_data['comments']
 
-            # Handle fleet manager acknowledgement separately
             if decision == 'acknowledge' and current_role == 'FLEET MANAGER':
                 Approval.objects.create(
                     authorization=authorization,
@@ -140,7 +180,6 @@ def approve_auth(request, pk):
                 authorization.status = 'APPROVED'
                 authorization.next_approval_role = ''
                 authorization.save()
-                # remove from viewed session list when finalized
                 try:
                     viewed = request.session.get('viewed_authorizations', [])
                     if authorization.id in viewed:
@@ -161,19 +200,16 @@ def approve_auth(request, pk):
             )
 
             if approved:
-                # Get next approver details from form
                 next_approver_name = form.cleaned_data.get('next_approver_name')
                 next_approver_email = form.cleaned_data.get('next_approver_email')
 
-                # Advance to next role
                 authorization.advance_approval()
                 next_role = authorization.next_approval_role
 
-                # Store the provided approver details on the VehicleAuth record
                 if next_role == 'SENIOR MANAGER/GM':
                     authorization.senior_manager_name = next_approver_name
                     authorization.senior_manager_email = next_approver_email
-                elif next_role == 'FLEET COMLPLIANCE':
+                elif next_role == 'FLEET COMPLIANCE':
                     authorization.fleet_compliance_name = next_approver_name
                     authorization.fleet_compliance_email = next_approver_email
                 elif next_role == 'FLEET MANAGER':
@@ -182,12 +218,11 @@ def approve_auth(request, pk):
 
                 authorization.save()
 
-                # Send email to next approver
                 if next_role and next_approver_email:
                     try:
                         subject = (
-                            f"Approval required: "
-                            f"Vehicle auth {authorization.vehicle_registration}"
+                            f'Approval required: '
+                            f'Vehicle auth {authorization.vehicle_registration}'
                         )
                         link = request.build_absolute_uri(
                             authorization.get_approval_url()
@@ -197,35 +232,26 @@ def approve_auth(request, pk):
                             or authorization.submitted_by.username
                         )
                         message = (
-                            f"An approval is required from {next_role}.\n\n"
-                            f"Applicant: {applicant_name}\n"
-                            f"Vehicle: {authorization.vehicle_registration}\n"
-                            f"Start: {authorization.start_date}\n"
-                            f"End: {authorization.end_date}\n"
-                            f"Motivation: {authorization.motivation}\n\n"
-                            f"Review the application: {link}"
+                            f'An approval is required from {next_role}.\n\n'
+                            f'Applicant: {applicant_name}\n'
+                            f'Vehicle: {authorization.vehicle_registration}\n'
+                            f'Start: {authorization.start_date}\n'
+                            f'End: {authorization.end_date}\n'
+                            f'Motivation: {authorization.motivation}\n\n'
+                            f'Review the application: {link}'
                         )
-                        from_email = getattr(
-                            settings,
-                            'DEFAULT_FROM_EMAIL',
-                            None,
-                        )
-                        send_mail(
-                            subject,
-                            message,
-                            from_email,
-                            [next_approver_email],
-                        )
-                        print(f"\n✓ EMAIL SENT TO: {next_approver_email}\n")
+                        from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', None)
+                        send_mail(subject, message, from_email, [next_approver_email])
+                        print(f'\n✓ EMAIL SENT TO: {next_approver_email}\n')
                     except Exception as e:
-                        print(f"\n✗ EMAIL FAILED: {type(e).__name__}: {e}\n")
+                        print(f'\n✗ EMAIL FAILED: {type(e).__name__}: {e}\n')
             else:
                 authorization.status = 'REJECTED'
                 authorization.next_approval_role = ''
                 authorization.save()
 
-            # clear from viewed list if the request is no longer pending
             try:
+                
                 if authorization.status != 'PENDING':
                     viewed = request.session.get('viewed_authorizations', [])
                     if authorization.id in viewed:
@@ -245,6 +271,7 @@ def approve_auth(request, pk):
             'form': form,
             'authorization': authorization,
             'current_role': current_role,
+            'has_permission': has_permission,
         },
     )
 
@@ -252,60 +279,112 @@ def approve_auth(request, pk):
 @login_required
 @never_cache
 def request_approval_permission(request, pk):
-    return redirect('auth_detail', pk=pk)
+    authorization = get_object_or_404(VehicleAuth, pk=pk)
+
+    current_role = authorization.next_approval_role
+
+    if request.method == "POST":
+        form = RequestApprovalPermissionForm(request.POST)
+
+        if form.is_valid():
+            message = form.cleaned_data["message"]
+
+            send_mail(
+                subject=f"Approval Permission Request - {current_role}",
+                message=(
+                    f"User: {request.user.get_full_name() or request.user.username}\n"
+                    f"Email: {request.user.email}\n"
+                    f"Role Requested: {current_role}\n\n"
+                    f"Reason:\n{message}"
+                ),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=["tktsatsi@gmail.com"],
+            )
+            messages.success(
+                request,
+                "Your approval permission request has been sent to the administrator."
+            )
+
+            return redirect("auth_detail", pk=pk)
+
+    else:
+        form = RequestApprovalPermissionForm()
+
+    return render(
+        request,
+        "CityPowerVehicle/request_permission.html",
+        {
+            "form": form,
+            "authorization": authorization,
+            "current_role": current_role,
+        },
+    )
 
 
 @login_required
 @never_cache
 def dashboard(request):
-    # Superusers see all applications.
+    # Requests this approver has opened from an email link
+    viewed_ids = request.session.get("viewed_authorizations", [])
+    
     if request.user.is_superuser:
         authorizations = VehicleAuth.objects.all()
-    else:
-        own_authorizations = list(
-            VehicleAuth.objects.filter(submitted_by=request.user)
-        )
-        pending_authorizations = VehicleAuth.objects.filter(status='PENDING')
-        approval_requests = [
-            auth for auth in pending_authorizations
-            if auth.can_be_approved_by(request.user)
-        ]
 
-        # Avoid duplicates if the user is both applicant and approver.
-        auth_by_id = {auth.id: auth for auth in own_authorizations}
-        for auth in approval_requests:
-            if auth.id not in auth_by_id:
+    else:
+        auth_by_id = {}
+
+        # My own requests
+        for auth in VehicleAuth.objects.filter(submitted_by=request.user):
+            auth_by_id[auth.id] = auth
+
+        # Requests assigned to me
+        pending = VehicleAuth.objects.filter(status="PENDING")
+
+        for auth in pending:
+            approver_email = get_expected_approver_email(auth)
+
+            if (
+                approver_email
+                and approver_email.strip().lower()
+                == request.user.email.strip().lower()
+            ):
                 auth_by_id[auth.id] = auth
+
+        # Requests I opened from an email
+        for auth in VehicleAuth.objects.filter(id__in=viewed_ids):
+            auth_by_id[auth.id] = auth
 
         authorizations = list(auth_by_id.values())
 
-        # Include any pending authorizations the user has recently viewed
-        viewed_ids = request.session.get('viewed_authorizations', [])
-        if viewed_ids:
-            viewed_qs = VehicleAuth.objects.filter(id__in=viewed_ids, status='PENDING')
-            for auth in viewed_qs:
-                if auth.id not in auth_by_id:
-                    authorizations.append(auth)
+    authorizations_with_meta = []
 
-    # Build a list of dicts so template can decide whether to link to approval view
-    viewed_ids = request.session.get('viewed_authorizations', [])
-    authorizations_with_meta = [
-        {
-            'authorization': a,
-            'can_approve': a.can_be_approved_by(request.user),
-            'viewed': a.id in viewed_ids,
-        }
-        for a in authorizations
-    ]
+    for auth in authorizations:
 
-    viewed_count = sum(1 for item in authorizations_with_meta if item.get('viewed'))
+        approver_email = get_expected_approver_email(auth)
+
+        is_expected_approver = (
+            approver_email
+            and approver_email.lower() == request.user.email.lower()
+        )
+
+        authorizations_with_meta.append({
+            "authorization": auth,
+            "can_approve": auth.can_be_approved_by(request.user),
+            "is_expected_approver": is_expected_approver,
+            "viewed": auth.id in viewed_ids,
+        })
+
+    pending_review_count = sum(
+        1 for item in authorizations_with_meta
+        if item["can_approve"]
+    )
 
     return render(
         request,
-        'CityPowerVehicle/dashboard.html',
+        "CityPowerVehicle/dashboard.html",
         {
-            'authorizations_with_meta': authorizations_with_meta,
-            'viewed_count': viewed_count,
+            "authorizations_with_meta": authorizations_with_meta,
+            "pending_review_count": pending_review_count,
         },
     )
 
@@ -372,8 +451,56 @@ def create_auth(request):
 @never_cache
 def auth_detail(request, pk):
     authorization = get_object_or_404(VehicleAuth, pk=pk)
+
+    viewed = request.session.get('viewed_authorizations', [])
+
+    if authorization.id not in viewed:
+        viewed.insert(0, authorization.id)
+        request.session['viewed_authorizations'] = viewed
+    
+    # Allow the requester to always view their own request
+    if authorization.submitted_by != request.user and not request.user.is_superuser:
+
+        viewed = request.session.get("viewed_authorizations", [])
+
+        if authorization.id not in viewed:
+            messages.error(
+                request,
+                "You can only access requests that have been shared with you."
+            )
+            return redirect("dashboard")
+
     approval_history = authorization.approvals.order_by('signed_on')
+    
     next_role_label = None
+    can_approve = False
+    can_request_permission = False
+    has_permission = False
+    is_expected_approver = False
+
+        # Request owner can always view
+    if authorization.submitted_by == request.user:
+        allowed = True
+
+    # Admin can always view
+    elif request.user.is_superuser:
+        allowed = True
+
+    else:
+        expected_email = get_expected_approver_email(authorization)
+
+        allowed = (
+            expected_email
+            and request.user.email.lower() == expected_email.lower()
+        )
+
+    if not allowed:
+        messages.error(
+            request,
+            "You don't have permission to view this request."
+        )
+        return redirect("dashboard")
+    
     if authorization.status == 'PENDING' and authorization.next_approval_role:
         next_role_label = dict(
             APPROVAL_ROLES,
@@ -382,13 +509,27 @@ def auth_detail(request, pk):
             authorization.next_approval_role,
         )
 
-    can_approve = (
-        authorization.status == 'PENDING'
-        and user_has_role(
-            request.user,
-            authorization.next_approval_role,
+        current_role = authorization.next_approval_role
+        expected_email = get_expected_approver_email(authorization)
+
+        is_expected_approver = (
+            expected_email
+            and request.user.email.lower() == expected_email.lower()
         )
-    )
+
+        has_permission = user_has_role(request.user, current_role)
+        
+        can_approve = (
+            authorization.status == "PENDING"
+            and is_expected_approver
+            and has_permission
+        )
+
+        can_request_permission = (
+            authorization.status == "PENDING"
+            and is_expected_approver
+            and not has_permission
+        )
 
     # If this authorization was rejected, surface the latest rejection details
     rejection_notice = None
@@ -401,21 +542,6 @@ def auth_detail(request, pk):
                 'when': rejection.signed_on,
             }
 
-    # Record that this user viewed the authorization so it can appear on their dashboard
-    try:
-        viewed = request.session.get('viewed_authorizations', [])
-        if not isinstance(viewed, list):
-            viewed = []
-        if authorization.id not in viewed:
-            viewed.insert(0, authorization.id)
-            # keep the list bounded
-            if len(viewed) > 50:
-                viewed = viewed[:50]
-            request.session['viewed_authorizations'] = viewed
-    except Exception:
-        # session backend problems shouldn't block the view
-        pass
-
     return render(
         request,
         'CityPowerVehicle/auth_detail.html',
@@ -427,5 +553,8 @@ def auth_detail(request, pk):
             'can_approve': can_approve,
             'next_role_label': next_role_label,
             'rejection_notice': rejection_notice,
+            'can_request_permission': can_request_permission,
+            'has_permission': has_permission,
+            'is_expected_approver': is_expected_approver,
         },
     )

@@ -25,14 +25,14 @@ STATUS_CHOICES = [
 APPROVAL_ROLES = [
     ('LINE MANAGER', 'Line Manager'),
     ('SENIOR MANAGER/GM', 'Senior Manager/GM'),
-    ('FLEET COMLPLIANCE', 'Fleet Compliance'),
+    ('FLEET COMPLIANCE', 'Fleet Compliance'),
     ('FLEET MANAGER', 'Fleet Manager'),
 ]
 
 APPROVAL_ORDER = {
     'LINE MANAGER': 0,
     'SENIOR MANAGER/GM': 1,
-    'FLEET COMLPLIANCE': 2,
+    'FLEET COMPLIANCE': 2,
     'FLEET MANAGER': 3,
 }
 
@@ -129,23 +129,49 @@ class VehicleAuth(models.Model):
             self.next_approval_role = ''
 
     def can_be_approved_by(self, user):
-        if self.status != 'PENDING':
+        if self.status != "PENDING":
             return False
+
         if user.is_superuser:
             return True
-        if not self.next_approval_role:
+
+        if not user.email:
             return False
-        expected = self.next_approval_role.strip().lower()
-        return any(
-            group.name.strip().lower() == expected
-            for group in user.groups.all()
-        )
+
+        role = self.next_approval_role
+
+        if role == "LINE MANAGER":
+            return (
+                self.line_manager_email
+                and self.line_manager_email.lower() == user.email.lower()
+            )
+
+        elif role == "SENIOR MANAGER/GM":
+            return (
+                self.senior_manager_email
+                and self.senior_manager_email.lower() == user.email.lower()
+            )
+
+        elif role == "FLEET COMPLIANCE":
+            return (
+                self.fleet_compliance_email
+                and self.fleet_compliance_email.lower() == user.email.lower()
+            )
+
+        elif role == "FLEET MANAGER":
+            return (
+                self.fleet_manager_email
+                and self.fleet_manager_email.lower() == user.email.lower()
+            )
+
+        return False
+            
 
     def get_manager_email(self, role_key):
         mapping = {
             'LINE MANAGER': self.line_manager_email,
             'SENIOR MANAGER/GM': self.senior_manager_email,
-            'FLEET COMLPLIANCE': self.fleet_compliance_email,
+            'FLEET COMPLIANCE': self.fleet_compliance_email,
             'FLEET MANAGER': self.fleet_manager_email,
         }
         return mapping.get(role_key)
@@ -173,3 +199,23 @@ class Approval(models.Model):
         if self.acknowledged:
             return 'Acknowledged'
         return 'Approved' if self.approved else 'Rejected'
+
+class AuthorizationAccess(models.Model):
+    authorization = models.ForeignKey(
+        VehicleAuth,
+        on_delete=models.CASCADE,
+        related_name="access_users"
+    )
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE
+    )
+
+    granted_on = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("authorization", "user")
+
+    def __str__(self):
+        return f"{self.user.username} -> {self.authorization.vehicle_registration}"

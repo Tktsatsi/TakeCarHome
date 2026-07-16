@@ -136,7 +136,7 @@
 
     </div>
 
-    {% if viewed_count and viewed_count > 0 %}
+    {% if pending_review_count and pending_review_count > 0 %}
 
     <div class="alert alert-info border-0 shadow-sm">
 
@@ -144,9 +144,9 @@
 
         You recently viewed
 
-        <strong>{{ viewed_count }}</strong>
+        <strong>{{ pending_review_count }}</strong>
 
-        request{{ viewed_count|pluralize }}.
+        request{{ pending_review_count|pluralize }}.
 
     </div>
 
@@ -186,9 +186,11 @@
 
                             <th>Status</th>
 
+                            <th>Current Approver</th>
+
                             <th>Created</th>
 
-                            <th width="260">Actions</th>
+                            <th width="340">Actions</th>
 
                         </tr>
 
@@ -255,6 +257,30 @@
 
                             <td>
 
+                                {% if authorization.status == "PENDING" %}
+
+                                    {% if authorization.next_approval_role == "LINE MANAGER" %}
+                                        {{ authorization.line_manager_name }}
+
+                                    {% elif authorization.next_approval_role == "SENIOR MANAGER/GM" %}
+                                        {{ authorization.senior_manager_name }}
+
+                                    {% elif authorization.next_approval_role == "FLEET COMPLIANCE" %}
+                                        {{ authorization.fleet_compliance_name }}
+
+                                    {% elif authorization.next_approval_role == "FLEET MANAGER" %}
+                                        {{ authorization.fleet_manager_name }}
+
+                                    {% endif %}
+
+                                {% else %}
+                                    —
+                                {% endif %}
+
+                                </td>
+
+                            <td>
+
                                 {{ authorization.created_at|date:"d M Y" }}
 
                             </td>
@@ -264,29 +290,25 @@
                                 <div class="btn-group">
 
                                     {% if item.can_approve %}
+                                        <a href="{% url 'approve_auth' authorization.id %}"
+                                        class="btn btn-success btn-sm">
+                                            <i class="bi bi-check2-square"></i>
+                                            Review
+                                        </a>
 
-                                    <a href="{% url 'approve_auth' authorization.id %}"
-
-                                       class="btn btn-primary btn-sm">
-
-                                        <i class="bi bi-check2-square"></i>
-
-                                        Review
-
-                                    </a>
+                                    {% elif item.is_expected_approver %}
+                                        <a href="{% url 'auth_detail' authorization.id %}"
+                                        class="btn btn-warning btn-sm">
+                                            <i class="bi bi-shield-lock"></i>
+                                            Request Permission
+                                        </a>
 
                                     {% else %}
-
-                                    <a href="{% url 'auth_detail' authorization.id %}"
-
-                                       class="btn btn-outline-primary btn-sm">
-
-                                        <i class="bi bi-eye"></i>
-
-                                        View
-
-                                    </a>
-
+                                        <a href="{% url 'auth_detail' authorization.id %}"
+                                        class="btn btn-outline-primary btn-sm">
+                                            <i class="bi bi-eye"></i>
+                                            View
+                                        </a>
                                     {% endif %}
 
                                     {% if authorization.submitted_by == user and authorization.status == 'PENDING' %}
